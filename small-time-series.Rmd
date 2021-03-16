@@ -1,0 +1,179 @@
+---
+title: "small-time-series"
+author: "Ana Laura Diedrichs"
+date: "16/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# R basic
+
+## Plot one time serie (one line trend) 
+
+We are going to plot a single line trend. Time series R objects 
+
+```{r }
+
+myvector <- rnorm(72,mean = -1, sd = 10)
+plot(myvector, type = "l") # type = "l" because is a line
+```
+```{r cars}
+
+myvector <- data.frame(index=1:72,a=rnorm(72,mean = -1, sd = 10))
+myvector
+```
+```{r }
+plot(myvector)
+```
+
+## Plot a group of lines
+
+We can add more lines with line() function
+
+```{r}
+x <- 1:10
+y1 <- x*x
+y2  <- 2*y1
+# Create a first line
+plot(x, y1, type = "b", frame = FALSE, pch = 19, 
+     col = "red", xlab = "x", ylab = "y")
+# Add a second line
+lines(x, y2, pch = 18, col = "blue", type = "b", lty = 2)
+# Add a legend to the plot
+legend("topleft", legend=c("Line 1", "Line 2"),
+       col=c("red", "blue"), lty = 1:2, cex=0.8)
+```
+
+# ts object package forecast
+
+You can also embed plots, for example:
+
+```{r }
+library(forecast)
+# save a numeric vector containing 72 monthly observations
+# from Jan 2009 to Dec 2014 as a time series object
+
+myvector <- rnorm(72,mean = -1, sd = 10)
+myts <- ts(myvector, start=c(2009, 1), end=c(2014, 12), frequency=12)
+
+# subset the time series (June 2014 to December 2014)
+myts2 <- window(myts, start=c(2014, 6), end=c(2014, 12))
+
+# plot series
+plot(myts)
+
+```
+```{r}
+# subset the time series (June 2014 to December 2014)
+myts2 <- window(myts, start=c(2014, 6), end=c(2014, 12))
+
+# plot series
+plot(myts2)
+```
+
+# ggplot
+
+```{r}
+library(ggplot2)
+theme_set(theme_minimal())
+# Demo dataset
+head(economics)
+```
+
+```{r}
+# Basic line plot
+ggplot(data = economics, aes(x = date, y = pop))+
+  geom_line(color = "#00AFBB", size = 2)
+# Plot a subset of the data
+ss <- subset(economics, date > as.Date("2006-1-1"))
+ggplot(data = ss, aes(x = date, y = pop)) + 
+  geom_line(color = "#FC4E07", size = 2)
+```
+
+http://www.sthda.com/english/articles/32-r-graphics-essentials/128-plot-time-series-data-using-ggplot/
+
+# plotly
+
+# dygraph
+https://medium.datadriveninvestor.com/interactive-time-series-plots-in-r-bceff3a7bb04
+# ggplotly
+
+# timetk 
+
+https://cran.r-project.org/web/packages/timetk/vignettes/TK04_Plotting_Time_Series.html
+
+# large time serie 
+
+```{r}
+#Get_random_dates that we will use multiple times
+gen_random_dates <- function(N, st, et) {
+st <- as.POSIXct(as.Date(st))
+et <- as.POSIXct(as.Date(et))
+dt <- as.numeric(difftime(et,st,unit="sec"))
+ev <- runif(N, 0, dt)
+rt <- st + ev
+return(rt)
+}
+
+#Generate admission and discharge dates
+admission <- gen_random_dates(1000, "2017/01/01", "2017/01/10")
+discharge <- gen_random_dates(1000, "2017/01/11", "2017/01/20")
+patient <- sort(sample(1:1000, 1000))
+patient_data <- data.frame(patient_ID = patient, admission_date = admission, discharge_date = discharge)
+
+#Grow the database
+patient_data <- patient_data[sort(sample(1000, 100000, replace=TRUE)), ] 
+
+#Medication admin date and dose
+patient_data$admin_date <- gen_random_dates(100000, patient_data$admission_date, patient_data$discharge_date)
+patient_data$admin_dose <- abs(as.integer(rnorm(100000, 50, 100)))
+```
+
+```{r}
+ggplot(patient_data, aes(x = admin_date, y = admin_dose)) +
+  xlab("Use of Drug in Patient Encounters") + ylab("Dose (mg)") +
+  geom_jitter()
+```
+```{r}
+
+library(ggplot2)
+gobject <- ggplot(patient_data, aes(x = admin_date, y = admin_dose)) +
+  xlab("Use of Drug in Patient Encounters") + ylab("Dose (mg)") +
+  geom_jitter() +
+  facet_wrap(~patient_ID)
+```
+
+```{r}
+library(plotly)
+library(ggplot2)
+ggplotly(gobject)
+```
+
+
+```{r}
+## EXAMPLE
+
+ require("zoo")
+
+ ## random data
+ dates <- seq(from = as.Date("2000-01-01"),
+              to   = as.Date("2011-10-31"), by = "1 day")
+ x <- cumsum(rnorm(length(dates)))
+
+ plot(zoo(x, dates), col = "blue")
+ ## plot every 100th point
+ subs <- seq(1, length(x), by = 10)
+ lines(zoo(x[subs], dates[subs]), lwd = 2)
+```
+
+
+http://iwoaf.com/plot-large-time-series-with-r/
+
+https://stackoverflow.com/questions/48840461/plotting-large-time-series
+# Recursos
+
+https://www.r-graph-gallery.com/time-series.html
+
